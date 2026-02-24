@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kita Zeiterfassung</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+        h2 { color: #0078d4; }
+        .info-text { color: #666; font-size: 0.9em; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Kita Check-In</h2>
+        <p class="info-text">Halte den QR-Code des Standorts vor die Kamera.</p>
+        <div id="reader"></div>
+        <p id="status">Warte auf Kamera...</p>
+    </div>
+
+    <script>
+        // 1. Geräte-ID / Nutzername festlegen
+        let myID = localStorage.getItem('kita_user_id');
+        if (!myID) {
+            myID = prompt("Willkommen! Bitte gib einmalig dein Kürzel oder deinen Namen ein:");
+            if(myID) localStorage.setItem('kita_user_id', myID);
+            else myID = "Unbekannt";
+        }
+
+        // 2. Scanner Setup
+        const html5QrCode = new Html5Qrcode("reader");
+        const qrCodeSuccessCallback = (decodedText) => {
+            document.getElementById('status').innerText = "Scan erfolgreich! Leite weiter...";
+            
+            // 3. Deine spezifische Microsoft Forms URL mit den entschlüsselten IDs
+            const formBase = "https://forms.office.com/Pages/ResponsePage.aspx?id=N1skmaEAOUi6fJdBeMC8bhrwsDiw_KhMt31-QQL3Bt5UM0sxM1ZGQTA2V00wSUZONFZaQURSRU9aSi4u";
+            const idParam = "r5b296f1c327b4e99a2c24595c8734d44";
+            const locParam = "r92f8bc0dc84e45059972d83a323706a9";
+
+            const finalUrl = `${formBase}&${idParam}=${encodeURIComponent(myID)}&${locParam}=${encodeURIComponent(decodedText)}`;
+
+            // Automatischer Redirect zum vorausgefüllten Formular
+            window.location.href = finalUrl;
+        };
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+    </script>
+</body>
+</html>
